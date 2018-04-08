@@ -51,6 +51,8 @@ char Commands::getCommandID(string cmd)
 		return 13;
 	else if (iequals(cmd, "loc"))
 		return 14;
+	else if (iequals(cmd, "setGMLevel"))
+		return 15;
 	else
 		return 0;
 }
@@ -85,6 +87,8 @@ char Commands::getTrustForCommand(string cmd)
 		return 0;
 	else if (iequals(cmd, "loc"))
 		return 1;
+	else if (iequals(cmd, "setGMLevel"))
+		return 1;
 	else
 		return 0;
 }
@@ -118,6 +122,8 @@ char Commands::getTrustForCommand(char id)
 	if (id == 13)
 		return 0;
 	if (id == 14)
+		return 1;
+	if (id == 15)
 		return 1;
 	else
 		return 0;
@@ -283,8 +289,21 @@ void Commands::performCommand(CommandSender sender, string cmd, vector<string> a
 							long l = stol(trustLevel);
 							if (l > 0 && l <= 255)
 							{
-								Accounts::setTrustLevel(l, accountID);
-								sender.sendMessage(username + "'s trust was edited successfully! New trust level " + trustLevel);
+								if (sender.getSenderID() != -1)
+								{
+									if (l < Accounts::getTrustLevel(Characters::getAccountID(sender.getSenderID())) && Accounts::getTrustLevel(accountID) < Accounts::getTrustLevel(Characters::getAccountID(sender.getSenderID())))
+									{
+										Accounts::setTrustLevel(l, accountID);
+										sender.sendMessage(username + "'s trust was edited successfully! New trust level: " + trustLevel + "!");
+									}
+									else
+										sender.sendMessage("You do not have a high enough trust level to make this change.");
+								}
+								else
+								{
+									Accounts::setTrustLevel(l, accountID);
+									sender.sendMessage(username + "'s trust was edited successfully! New trust level: " + trustLevel + "!");
+								}
 							}
 							else
 								sender.sendMessage("This command requires a valid trust level, under 255! Example: '/setTrust ExampleUsername 0'");
@@ -296,7 +315,7 @@ void Commands::performCommand(CommandSender sender, string cmd, vector<string> a
 						sender.sendMessage("There is no account with the username '" + username + "'!");
 				}
 				else
-					sender.sendMessage("Invalid parameters! Syntax: /" + cmd + " <username> <time> <reason>");
+					sender.sendMessage("Invalid parameters! Syntax: /" + cmd + " <username> <trust level>");
 			}
 
 			else if (Commands::getCommandID(cmd) == 8) // /banAccount <string:ip> <string:time> <string:reason>
@@ -752,8 +771,39 @@ void Commands::performCommand(CommandSender sender, string cmd, vector<string> a
 
 			else if (Commands::getCommandID(cmd) == 14) { /* This is handled on the client side. */ }
 
+			else if (Commands::getCommandID(cmd) == 15) // /setGMLevel <string:CharacterName> <char:GMLevel>
+			{
+				if (args.size() == 2)
+				{
+					string name = args.at(0);
+					string GMLevel = args.at(1);
+
+					long long charID = Characters::getCharacterID(name);
+					if (charID != -1)
+					{
+						if (Validate::isValidS32(GMLevel))
+						{
+							long l = stol(GMLevel);
+							if (l > 0 && l <= 255)
+							{
+								Characters::setGMLevel(l, charID);
+								sender.sendMessage(name + "'s GM level was edited successfully! New GM level " + GMLevel);
+							}
+							else
+								sender.sendMessage("This command requires a valid GM level, under 255, technically, but really, it should be much less! Example: '/setGMLevel ExampleUsername 0'");
+						}
+						else
+							sender.sendMessage("This command requires a valid numerical GM level! Example: '/setGMLevel ExampleUsername 0'");
+					}
+					else
+						sender.sendMessage("There is no account with the username '" + name + "'!");
+				}
+				else
+					sender.sendMessage("Invalid parameters! Syntax: /" + cmd + " <character name> <gm level>");
+			}
+
 			else
-				sender.sendMessage("Please report the following ID: " + to_string(Commands::getCommandID(cmd)));
+				sender.sendMessage("This command has not yet been implimented.");
 		}
 		else
 			sender.sendMessage("You don't have permission to use this command!");
