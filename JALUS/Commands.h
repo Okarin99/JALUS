@@ -18,5 +18,8 @@ public:
 class Commands
 {
 public:
+	static char getCommandID(string cmd);
+	static char getTrustForCommand(string cmd);
+	static char getTrustForCommand(char id);
 	static void performCommand(CommandSender sender, string cmd, vector<string> args);
 };

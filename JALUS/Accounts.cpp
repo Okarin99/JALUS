@@ -234,6 +234,47 @@ string Accounts::getPasswordHash(long long accountID)
 	return r;
 }
 
+char Accounts::getTrustLevel(long long accountID)
+{
+	SAConnection con;
+	SACommand cmd;
+
+	long long r = -1;
+
+	try
+	{
+		con.Connect((Config::getMySQLHost() + "@" + Config::getMySQLDatabase()).c_str(),
+			Config::getMySQLUsername().c_str(),
+			Config::getMySQLPassword().c_str(),
+			SA_MySQL_Client);
+
+		stringstream ss;
+		ss << "SELECT trust_level FROM";
+		ss << " " << Accounts::name << " ";
+		ss << "WHERE id = '" << accountID << "';";
+
+		cmd.setConnection(&con);
+		cmd.setCommandText(ss.str().c_str());
+		cmd.Execute();
+
+		if (cmd.FetchFirst())
+			r = cmd.Field("trust_level").asNumeric();
+
+		con.Commit();
+		con.Disconnect();
+	}
+	catch (SAException &x)
+	{
+		try
+		{
+			con.Rollback();
+		}
+		catch (SAException &) {}
+	}
+
+	return r;
+}
+
 short Accounts::getLoginTries(long long accountID)
 {
 	SAConnection con;
@@ -382,6 +423,41 @@ void Accounts::setPasswordHash(string passwordHash, long long accountID)
 		ss << "UPDATE";
 		ss << " " << Accounts::name << " ";
 		ss << "SET password_hash = '" << passwordHash << "' ";
+		ss << "WHERE id = '" << accountID << "';";
+
+		cmd.setConnection(&con);
+		cmd.setCommandText(ss.str().c_str());
+		cmd.Execute();
+
+		con.Commit();
+		con.Disconnect();
+	}
+	catch (SAException &x)
+	{
+		try
+		{
+			con.Rollback();
+		}
+		catch (SAException &) {}
+	}
+}
+
+void Accounts::setTrustLevel(short trustLevel, long long accountID)
+{
+	SAConnection con;
+	SACommand cmd;
+
+	try
+	{
+		con.Connect((Config::getMySQLHost() + "@" + Config::getMySQLDatabase()).c_str(),
+			Config::getMySQLUsername().c_str(),
+			Config::getMySQLPassword().c_str(),
+			SA_MySQL_Client);
+
+		stringstream ss;
+		ss << "UPDATE";
+		ss << " " << Accounts::name << " ";
+		ss << "SET trust_level = '" << trustLevel << "' ";
 		ss << "WHERE id = '" << accountID << "';";
 
 		cmd.setConnection(&con);

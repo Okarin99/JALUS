@@ -250,7 +250,9 @@
     <ClInclude Include="RakNetVersion.h" />
     <ClInclude Include="RakNetworkFactory.h" />
     <ClInclude Include="RakPeer.h" />
-    <ClInclude Include="RakPeerInterface.h" />
+    <ClInclude Include="RakPeerInterface.h">
+      <DeploymentContent>true</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="RakSleep.h" />
     <ClInclude Include="RakString.h" />
     <ClInclude Include="RakThread.h" />

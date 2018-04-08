@@ -1,5 +1,18 @@
 #include "Validate.h"
 
+bool Validate::isValidS16(string str)
+{
+	try
+	{
+		stol(str);
+		return true;
+	}
+	catch (exception& e)
+	{
+		return false;
+	}
+}
+
 bool Validate::isValidS32(string str)
 {
 	try
